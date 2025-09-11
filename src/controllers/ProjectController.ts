@@ -30,7 +30,7 @@ export class ProjectController {
     static getProyectById = async (req: Request, res:Response) => {    //Metodo para obtener los proyectos
         const {id} = req.params
         try {
-            const project = await Project.findById(id)  //Obtenemos el pryecto del parametro id enviado
+            const project = await Project.findById(id).populate('tasks')  //Obtenemos el pryecto del parametro id enviado
             
             if(!project){   //Si no encuentra un proyecto
                 const error = new Error('This project does not exists')
