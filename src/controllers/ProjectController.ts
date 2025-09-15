@@ -47,11 +47,14 @@ export class ProjectController {
         const {id} = req.params
         console.log(req.body)
         try {
-            const project = await Project.findByIdAndUpdate(id, req.body) //Busca el id y lo actualiza con lo que le mandemos en body
+            const project = await Project.findById(id) //Busca el id y lo actualiza con lo que le mandemos en body
             if(!project){   //Si no encuentra un proyecto
                 const error = new Error('This project does not exists')
                 return res.status(404).json({error: error.message})  //Devolveremos el error
             }
+            project.projectName = req.body.projectName
+            project.clientName = req.body.clientName
+            project.description = req.body.description
             await project.save()
             res.send('Project was updated')
 

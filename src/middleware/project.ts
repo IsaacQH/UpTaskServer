@@ -12,7 +12,7 @@ declare global {
 }
 
 //Valida si el proyecto existe
-export async function validateProjectExists(req:Request, res:Response, next:NextFunction){
+export async function projectExists(req:Request, res:Response, next:NextFunction){
     try {
         const {projectId} = req.params //Obtenemos el ID del proyecto 
         const project = await Project.findById(projectId)  //Obtnemos el projecto segun el ID

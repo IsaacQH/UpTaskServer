@@ -5,7 +5,8 @@ import { ProjectController } from "../controllers/ProjectController";
 import { body, param } from "express-validator";
 import { handleInputErrors } from "../middleware/validation";
 import { TaskController } from "../controllers/TaskController";
-import { validateProjectExists } from "../middleware/projects";
+import { projectExists } from "../middleware/project";
+import { taskBelongsToProject, taskExists } from "../middleware/task";
 
 const router = Router()  //Creamos la instancia de router
 
@@ -59,9 +60,10 @@ router.delete('/:id',
 
 //TASK ROUTES---------------------------------------------------------------------------
 
+router.param('projectId', projectExists)  // MIDDLEWARE - Validamos que el proyecto exista cada que projectID sea llamado
+
 //Ruta para crear tareas  Ruta: /api/projects/:projectId/tasks
 router.post('/:projectId/tasks',
-    validateProjectExists,    //Validamos que exista el proyecto con el middleware
     body('name')  //Validacion
         .notEmpty().withMessage('Name of the task is mandatory'),
     body('description')
@@ -71,8 +73,48 @@ router.post('/:projectId/tasks',
 
 //Ruta para mostrar todas las tareas  Ruta: /api/projects/:projectId/tasks
 router.get('/:projectId/tasks',
-    validateProjectExists,
     TaskController.getProjectTasks
+)
+
+router.param('taskId', taskExists)  //MIDDLEWARE - Llamamos el middleware para evitar tanto codigo en el controller sobre el task existing
+router.param('taskId', taskBelongsToProject)  //MIDDLEWARE - Llamamos el middleware revisar que el task pertenezca al projecto
+
+//Ruta para mostrar una tarea por id  Ruta: /api/projects/:projectId/tasks/:taskId
+router.get('/:projectId/tasks/:taskId',
+    param('taskId')  //Validacion
+        .isMongoId().withMessage('Mongo ID is mandatory'),
+        handleInputErrors,
+    TaskController.getTaskById
+)
+
+//Ruta para actualizar una tarea por id  Ruta: /api/projects/:projectId/tasks/:taskId
+router.put('/:projectId/tasks/:taskId',
+    param('taskId')  //Validacion
+        .isMongoId().withMessage('Mongo ID is mandatory'),
+    body('name')  //Validacion
+        .notEmpty().withMessage('Name of the task is mandatory'),
+    body('description')
+        .notEmpty().withMessage('Description is mandatory'),
+    handleInputErrors,
+    TaskController.updateTask
+)
+
+//Ruta para elminar una tarea por id  Ruta: /api/projects/:projectId/tasks/:taskId
+router.delete('/:projectId/tasks/:taskId',
+    param('taskId')  //Validacion
+        .isMongoId().withMessage('Mongo ID is mandatory'),
+    handleInputErrors,
+    TaskController.deleteTask
+)
+
+//Ruta para cambiar el status de una tarea por id  Ruta: /api/projects/:projectId/tasks/:taskId/status
+router.post('/:projectId/tasks/:taskId/status',
+    param('taskId')  //Validacion
+        .isMongoId().withMessage('Mongo ID is mandatory'),
+    body('status')  //Validacion
+        .notEmpty().withMessage('Status of the task is mandatory'),
+    handleInputErrors,
+    TaskController.updateStatus
 )
 
 
